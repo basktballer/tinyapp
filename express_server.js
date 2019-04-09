@@ -12,6 +12,14 @@ var urlDatabase = {
   "9sm5xK": "http://www.google.com"
 };
 
+var deleteURLs = function (urlDB) {
+  var obj = {};
+  for (var key in urlDB) {
+    obj[key] = "/urls/" + key + "/delete"
+  }
+  return obj;
+}
+
 app.get("/", (req,res) => {
   res.send("Hello!");
 });
@@ -27,10 +35,10 @@ app.get("/u/:shortURL",(req,res) => {
     const longURL = urlDatabase[req.params.shortURL];
     res.redirect(longURL)  
   }
-})
+});
 
 app.get("/urls", (req,res) => {
-  let templateVars = {urls: urlDatabase};
+  let templateVars = {urls: urlDatabase, delurls: deleteURLs(urlDatabase)};
   res.render("urls_index", templateVars);
 });
 
@@ -49,7 +57,12 @@ app.get("/urls.json", (req,res) => {
 app.post("/urls", (req,res) => {
   var shortURL = generateRandomString(6);
   urlDatabase[shortURL] = req.body.longURL;
-  res.redirect("urls/" + shortURL);
+  res.redirect("/urls/" + shortURL);
+});
+
+app.post("/urls/:shortcode/delete", (req,res) => {
+  delete urlDatabase[req.params.shortcode]
+  res.redirect("/urls/")
 });
 
 app.listen(PORT, () => {

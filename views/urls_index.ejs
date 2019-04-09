@@ -15,10 +15,28 @@
         <h3>My URLs</h3>
         <ul>
           <% for(var url in urls) { %>
-            <li><b><%=url %></b>: <%= urls[url] %> </li>
-
+            <li><b><%=url %></b>: <%= urls[url] %> 
+              <form method="POST" action=<%= url%>/delete  id= <%= url %>>
+                <input type="submit" value="Delete" >
+              </form> 
+            </li>      
           <% }; %>
         </ul>
+
       
     </body>
   </html>
+
+  <!-- onclick="document.getElementById(this.id).action+= url;return true;" -->
+  <!-- <form method="POST" action="/urls"  id= <%= url %>>
+    <input type="submit" value="Delete" onclick="document.document.getElementById(this.id).action+='/'+ this.id +'/delete';return true;">
+    <button  
+  </form>      -->
+
+  <!-- <input id="id" type="submit" name="id" /><br />
+  <button id:"cancella" type="submit">Delete</button>
+  <input type="submit" value="Delete"> -->
+
+  <!-- <form method="POST" action="/urls/9sm5xK/delete">
+    <input id="id" type="submit" name="id" />
+  </form> -->
