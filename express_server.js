@@ -16,6 +16,19 @@ app.get("/", (req,res) => {
   res.send("Hello!");
 });
 
+app.get("/hello", (req,res) => {
+  res.send("<html><body>Hello <b>World</b></body></html>\n");
+});
+
+app.get("/u/:shortURL",(req,res) => {
+  if (urlDatabase[req.params.shortURL] === undefined) {
+    res.redirect("/urls/new")
+  } else {
+    const longURL = urlDatabase[req.params.shortURL];
+    res.redirect(longURL)  
+  }
+})
+
 app.get("/urls", (req,res) => {
   let templateVars = {urls: urlDatabase};
   res.render("urls_index", templateVars);
@@ -33,13 +46,10 @@ app.get("/urls.json", (req,res) => {
   res.json(urlDatabase);
 });
 
-app.get("/hello", (req,res) => {
-  res.send("<html><body>Hello <b>World</b></body></html>\n");
-});
-
 app.post("/urls", (req,res) => {
-  console.log(req.body);
-  res.send("Ok");
+  var shortURL = generateRandomString(6);
+  urlDatabase[shortURL] = req.body.longURL;
+  res.redirect("urls/" + shortURL);
 });
 
 app.listen(PORT, () => {
