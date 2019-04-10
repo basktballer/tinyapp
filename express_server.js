@@ -14,6 +14,19 @@ var urlDatabase = {
   "9sm5xK": "http://www.google.com"
 };
 
+const users = {
+  "userRandom" : {
+    id: "userRandomID",
+    email: "user@example.com",
+    password: "purple-monkey-dinosaur"
+  },
+  "userRandom2" : {
+    id: "user2RandomID",
+    email: "user2@example.com",
+    password: "dishwasher-funk"
+  }
+}
+
 var deleteURLs = function (urlDB) {
   var obj = {};
   for (var key in urlDB) {
@@ -53,8 +66,13 @@ app.get("/urls/:shortURL", (req, res) => {
   let templateVars = {shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL], username: req.cookies["username"]};
   res.render("urls_show", templateVars);
 });
+
 app.get("/urls.json", (req,res) => {
   res.json(urlDatabase);
+});
+
+app.get("/register", (req,res) => {
+
 });
 
 app.post("/login", (req,res) => {
@@ -65,6 +83,10 @@ app.post("/login", (req,res) => {
 app.post("/logout", (req,res) => {
   res.clearCookie('username');
   res.redirect("/urls/");
+});
+
+app.post("/register", (req,res) => {
+  res.render("urls_register")
 });
 
 app.post("/urls", (req,res) => {
