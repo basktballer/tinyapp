@@ -13,17 +13,21 @@
           <% include ./partials/_header.ejs %>
       </header>
         <h3>My URLs</h3>
-        <ul>
           <% for(var url in urls) { %>
-            <li><b><%=url %></b>: <%= urls[url] %> 
-              <form method="POST" action=<%= url%>/delete  id= <%= url %>>
-                <input type="submit" value="Delete" >
+              <form method="POST" action="/urls/<%= url%>/delete"  id= <%= url %>>
+                <span>                  
+                  <label style="font-weight: bold; width: 50px; margin: 1em"><%=url %>:</label>
+                </span>
+                <span>
+                  <label style="width: 200px; margin: 1em"><%= urls[url] %></label>
+                </span>
+                <span>
+                  <label style="width: 50px; margin: 1em"><a href="/urls/<%= url%>">Edit</a></label>
+                </span>
+                <button type="submit" class="btn btn-primary" style="width: 200px; margin: 1em">Delete 🗑️</button>
               </form> 
-            </li>      
           <% }; %>
-        </ul>
-
-      
+     
     </body>
   </html>
 
