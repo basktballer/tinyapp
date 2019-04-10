@@ -142,8 +142,7 @@ function generateRandomString(num) {
 
 function emailChecker(email) {
   for (var user in users) {
-    console.log(user[email]);
-    if (Object.values(user).indexOf(email) > -1) {
+    if (Object.values(users[user]).indexOf(email) > -1) {
       return true;
     }    
   }
