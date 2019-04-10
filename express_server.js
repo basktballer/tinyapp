@@ -10,8 +10,8 @@ app.use(bodyParser.urlencoded({extended: true}));
 app.use(cookieParser());
 
 var urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com"
+  "b2xVn2": { longURL: "http://www.lighthouselabs.ca", userID: "userRandomID"},
+  "9sm5xK": {longURL: "http://www.google.com", userID: "user2RandomID"}
 };
 const users = {
   "userRandomID" : {
@@ -38,7 +38,7 @@ app.get("/u/:shortURL",(req,res) => {
   if (urlDatabase[req.params.shortURL] === undefined) {
     res.redirect("/urls/new")
   } else {
-    const longURL = urlDatabase[req.params.shortURL];
+    const longURL = urlDatabase[req.params.shortURL].longURL;
     res.redirect(longURL)  
   }
 });
@@ -50,11 +50,15 @@ app.get("/urls", (req,res) => {
 
 app.get("/urls/new", (req,res) => {
   let templateVars = {user: getUserObject(req.cookies["user_id"])}
-  res.render("urls_new", templateVars);
+  if (templateVars.user === undefined) {
+    res.redirect("/login");
+  } else {
+    res.render("urls_new", templateVars);
+  }
 })
 
 app.get("/urls/:shortURL", (req, res) => {
-  let templateVars = {shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL], user: getUserObject(req.cookies["user_id"])};
+  let templateVars = {shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL].longURL, user: getUserObject(req.cookies["user_id"])};
   res.render("urls_show", templateVars);
 });
 
