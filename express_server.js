@@ -15,12 +15,12 @@ var urlDatabase = {
 };
 
 const users = {
-  "userRandom" : {
+  "userRandomID" : {
     id: "userRandomID",
     email: "user@example.com",
     password: "purple-monkey-dinosaur"
   },
-  "userRandom2" : {
+  "userRandom2ID" : {
     id: "user2RandomID",
     email: "user2@example.com",
     password: "dishwasher-funk"
@@ -72,7 +72,8 @@ app.get("/urls.json", (req,res) => {
 });
 
 app.get("/register", (req,res) => {
-
+  let templateVars = {username: req.cookies["username"]}
+  res.render("urls_register", templateVars);
 });
 
 app.post("/login", (req,res) => {
@@ -86,7 +87,26 @@ app.post("/logout", (req,res) => {
 });
 
 app.post("/register", (req,res) => {
-  res.render("urls_register")
+
+  const { email, password} = req.body;
+  if (email === '' || password === '') {
+    res.status(400);
+    res.send("Email or username blank.")
+  } else if (emailChecker(email)=== true) {
+    res.status(400);
+    res.send("Email already exists.")
+  } else {
+
+    const id = generateRandomString(6);
+    users[id] = {
+      id, 
+      email, 
+      password
+    };
+    res.cookie('userID',id);
+    res.redirect("/urls");
+  }
+  console.log(users);
 });
 
 app.post("/urls", (req,res) => {
@@ -118,4 +138,14 @@ function generateRandomString(num) {
     text += possible.charAt(Math.floor(Math.random() * possible.length));
   }
   return text;
+}
+
+function emailChecker(email) {
+  for (var user in users) {
+    console.log(user[email]);
+    if (Object.values(user).indexOf(email) > -1) {
+      return true;
+    }    
+  }
+  return false;
 }
