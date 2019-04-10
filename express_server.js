@@ -53,17 +53,17 @@ app.get("/u/:shortURL",(req,res) => {
 });
 
 app.get("/urls", (req,res) => {
-  let templateVars = {urls: urlDatabase, username: req.cookies["username"]};
+  let templateVars = {urls: urlDatabase, user: getUserObject(req.cookies["username"])};
   res.render("urls_index", templateVars);
 });
 
 app.get("/urls/new", (req,res) => {
-  let templateVars = {username: req.cookies["username"]}
+  let templateVars = {user: getUserObject(req.cookies["username"])}
   res.render("urls_new", templateVars);
 })
 
 app.get("/urls/:shortURL", (req, res) => {
-  let templateVars = {shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL], username: req.cookies["username"]};
+  let templateVars = {shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL], user: getUserObject(req.cookies["username"])};
   res.render("urls_show", templateVars);
 });
 
@@ -72,8 +72,13 @@ app.get("/urls.json", (req,res) => {
 });
 
 app.get("/register", (req,res) => {
-  let templateVars = {username: req.cookies["username"]}
+  let templateVars = {user: getUserObject(req.cookies["username"])}
   res.render("urls_register", templateVars);
+});
+
+app.get("/login", (req,res) => {
+  let templateVars = {user: getUserObject(req.cookies["username"])}
+  res.render("urls_login",templateVars);
 });
 
 app.post("/login", (req,res) => {
@@ -106,7 +111,7 @@ app.post("/register", (req,res) => {
     res.cookie('userID',id);
     res.redirect("/urls");
   }
-  console.log(users);
+  // console.log(users);
 });
 
 app.post("/urls", (req,res) => {
@@ -147,4 +152,13 @@ function emailChecker(email) {
     }    
   }
   return false;
+}
+
+function getUserObject(username) {
+  for (var user in users) {
+    if (users[user].id === username) {
+      return users[user];
+    }
+  }
+  return undefined;
 }
