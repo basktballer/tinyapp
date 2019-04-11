@@ -1,6 +1,7 @@
 const express = require("express");
 const cookieParser = require ("cookie-parser")
 const bodyParser = require("body-parser")
+const bcrypt = require("bcrypt")
 const app = express();
 const PORT = 8080;
 
@@ -52,7 +53,6 @@ app.get("/urls", (req,res) => {
   } else {
     let userURLs = urlsForUser(templateVars.user.id);
     templateVars['userURLs'] = userURLs;
-    console.log(userURLs);
     res.render("urls_index", templateVars);
   }
   
@@ -129,10 +129,11 @@ app.post("/register", (req,res) => {
   } else {
 
     const id = generateRandomString(6);
+    const hashedPassword = bcrypt.hashSync(password,10);
     users[id] = {
       id, 
       email, 
-      password
+      hashedPassword
     };
     res.cookie('user_id',id);
     res.redirect("/urls");
@@ -157,7 +158,6 @@ app.post("/urls/:shortURL", (req,res) => {
     urlDatabase[shortURL] = longURL;
     res.redirect("/urls/")
   }
-  console.log(urlDatabase);
 });
 
 app.post("/urls/:shortcode/delete", (req,res) => {
@@ -171,7 +171,6 @@ app.post("/urls/:shortcode/delete", (req,res) => {
     delete urlDatabase[req.params.shortcode]
     res.redirect("/urls/")
   }
-  console.log(urlDatabase);
 });
 
 app.listen(PORT, () => {
@@ -197,10 +196,11 @@ function emailChecker(email) {
 }
 
 function pwChecker(username, pw) {
-  if (users[username].password === pw) {
+  if (bcrypt.compareSync(pw,users[username].hashedPassword))  {
     return true;
-  }    
-  return false;
+  } else {
+    return false;
+  }
 }
 
 function getUserObject(username) {
