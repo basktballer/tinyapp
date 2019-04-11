@@ -41,7 +41,7 @@ app.get("/u/:shortURL",(req,res) => {
   let templateVars = {user: getUserObject(req.session["user_id"])};
   if (urlDatabase[shortURL] === undefined) {
     templateVars['error'] = "Tiny URL does not exist.";
-    res.status(400);
+    res.status(404);
     res.render("urls_error", templateVars);
   } else {
     const longURL = urlDatabase[shortURL].longURL;
@@ -77,7 +77,7 @@ app.get("/urls/:shortURL", (req, res) => {
   let templateVars = {shortURL: shortURL, user: getUserObject(req.session["user_id"])};
   if(urlDatabase[shortURL] === undefined) {
     templateVars['error'] = "Tiny URL does not exist.";
-    res.status(403);
+    res.status(404);
     res.render("urls_error", templateVars);
   } else if (templateVars.user === undefined) {
     templateVars['error'] = "Please login or register first";
@@ -120,7 +120,7 @@ app.post("/login", (req,res) => {
   let templateVars = {user: getUserObject(req.session["user_id"])};
   if (email === '' || password === '') {
     res.status(400);
-    templateVars['error'] = "Email or password blank";
+    templateVars['error'] = "Please fill in all fields";
     res.render("urls_error", templateVars);
   }
   else if (emailChecker(email)!== true) {
@@ -151,7 +151,7 @@ app.post("/register", (req,res) => {
   let templateVars = {user: getUserObject(req.session["user_id"])};
   if (email === '' || password === '') {
     res.status(400);
-    templateVars['error'] = "Email or password blank";
+    templateVars['error'] = "Please fill in all fields";
     res.render("urls_error", templateVars);
   } else if (emailChecker(email)=== true) {
     res.status(403);
@@ -187,7 +187,11 @@ app.post("/urls/:shortURL", (req,res) => {
   const { shortURL } = req.params;
   const { longURL } = req.body;
   let templateVars = {user: getUserObject(req.session["user_id"])}
-  if (templateVars.user === undefined) {
+  if(urlDatabase[shortURL] === undefined) {
+    templateVars['error'] = "Tiny URL does not exist.";
+    res.status(404);
+    res.render("urls_error", templateVars);
+  } else if (templateVars.user === undefined) {
     templateVars['error'] = "Please login first";
     res.status(401);
     res.render("urls_error", templateVars);
@@ -204,7 +208,11 @@ app.post("/urls/:shortURL", (req,res) => {
 app.post("/urls/:shortURL/delete", (req,res) => {
   const { shortURL } = req.params;
   let templateVars = {user: getUserObject(req.session["user_id"])}
-  if (templateVars.user === undefined) {
+  if(urlDatabase[shortURL] === undefined) {
+    templateVars['error'] = "Tiny URL does not exist.";
+    res.status(404);
+    res.render("urls_error", templateVars);
+  } else if (templateVars.user === undefined) {
     templateVars['error'] = "Please login first";
     res.status(401);
     res.render("urls_error", templateVars);
