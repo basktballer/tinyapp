@@ -21,7 +21,7 @@ Tiny is a full stack web application built with Node and Express that allows use
 - Install all dependencies (using the 'npm install' command).
 - Run the development web server using the 'node express_server.js' command.
 
-## Functionality Criteria
+## Requirements
 
 ### User Stories
 - As an avid twitter poster, 
