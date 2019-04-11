@@ -12,6 +12,7 @@
     <h1 class="h1 mb-3 font-weight-bold">TinyApp</h1>
     <h6 class="h6 mb-3 font-weight-bold">Tiny your URLs.</h6>
     <% if(user === undefined) {%>
+      <!-- Display Register / Login pages -->
       <ul class="nav">
           <li class="nav-item">
             <a class="nav-link" href="../register">Register</a>
@@ -24,6 +25,7 @@
           </li>
       </ul>
       <% } else { %>
+        <!-- Display logged in user email and logout button -->
         <form action="/logout" method="POST" >
           <ul class="nav">
               <li class="nav-item">

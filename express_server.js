@@ -225,13 +225,13 @@ app.listen(PORT, () => {
 function generateRandomString(num) {
   var text = "";
   var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456879";
-  for (var i = 0; i < 6; i++) {
+  for (var i = 0; i < num; i++) {
     text += possible.charAt(Math.floor(Math.random() * possible.length));
   }
   return text;
 }
 
-function emailChecker(email) {
+function emailChecker(email) {  // check if email exists in users object
   for (var user in users) {
     if (Object.values(users[user]).indexOf(email) > -1) {
       return true;
@@ -240,7 +240,7 @@ function emailChecker(email) {
   return false;
 }
 
-function pwChecker(username, pw) {
+function pwChecker(username, pw) {  // check if entered password matches the stored hash password for user
   if (bcrypt.compareSync(pw,users[username].hashedPassword))  {
     return true;
   } else {
@@ -248,7 +248,7 @@ function pwChecker(username, pw) {
   }
 }
 
-function getUserObject(username) {
+function getUserObject(username) { // return user object if found, if not found condition is handled elsewhere
   for (var user in users) {
     if (users[user].id === username) {
       return users[user];
@@ -257,7 +257,7 @@ function getUserObject(username) {
   return undefined;
 }
 
-function getUserNamebyEmail(email) {
+function getUserNamebyEmail(email) { // return userID given the email
   for (var user in users) {
     if (users[user].email === email) {
       return users[user].id;
@@ -266,7 +266,7 @@ function getUserNamebyEmail(email) {
   return undefined;
 }
 
-function urlsForUser(id) {
+function urlsForUser(id) {  // return list of urls created by given userID
   const userURLs = {};
   for (let shorturl in urlDatabase) {
     if(urlDatabase[shorturl].userID === id) {
