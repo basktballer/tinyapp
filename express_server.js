@@ -13,13 +13,15 @@ var urlDatabase = {
   "b2xVn2": { longURL: "http://www.lighthouselabs.ca", userID: "userRandomID"},
   "9sm5xK": {longURL: "http://www.google.com", userID: "user2RandomID"}
 };
+
 const users = {
   "userRandomID" : {
     id: "userRandomID",
     email: "user@example.com",
-    password: "purple-monkey-dinosaur"
+    password: "asdf"
+    //    password: "purple-monkey-dinosaur"
 },
-  "userRandom2ID" : {
+  "user2RandomID" : {
     id: "user2RandomID",
     email: "user2@example.com",
     password: "dishwasher-funk"
@@ -69,7 +71,10 @@ app.get("/urls/:shortURL", (req, res) => {
   let templateVars = {shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL].longURL, user: getUserObject(req.cookies["user_id"])};
   if (templateVars.user === undefined) {
     res.send("Please login or register first.")
-  } else {
+  } else if(urlDatabase[templateVars.shortURL].userID !== templateVars.user.id) {
+    res.send(`URL cannot be displayed. URL does not belong to current user: ${templateVars.user.id}.`)
+  }
+  else {
     res.render("urls_show", templateVars);
 
   }
@@ -136,8 +141,8 @@ app.post("/register", (req,res) => {
 
 app.post("/urls", (req,res) => {
   var shortURL = generateRandomString(6);
-  urlDatabase[shortURL] = req.body.longURL;
-  res.redirect("/urls/" + shortURL);
+  urlDatabase[shortURL] = {longURL: req.body.longURL, userID: getUserObject(req.cookies["user_id"]).id};
+  res.redirect("/urls/");
 });
 
 app.post("/urls/:shortURL", (req,res) => {
@@ -145,15 +150,28 @@ app.post("/urls/:shortURL", (req,res) => {
   const { longURL } = req.body;
   let templateVars = {user: getUserObject(req.cookies["user_id"])}
   if (templateVars.user === undefined) {
-
+    res.send("Please login first.")
+  } else if (urlDatabase[shortURL].userID !== templateVars.user.id) {
+    res.send("URL cannot be displayed. URL does not belong to current user.")
+  } else {
+    urlDatabase[shortURL] = longURL;
+    res.redirect("/urls/")
   }
-  urlDatabase[shortURL] = longURL;
-  res.redirect("/urls/")
+  console.log(urlDatabase);
 });
 
 app.post("/urls/:shortcode/delete", (req,res) => {
-  delete urlDatabase[req.params.shortcode]
-  res.redirect("/urls/")
+  const { shortURL } = req.params;
+  let templateVars = {user: getUserObject(req.cookies["user_id"])}
+  if (templateVars.user === undefined) {
+    res.send("Please login first.")
+  } else if (urlDatabase[shortURL].userID !== templateVars.user.id) {
+    res.send("URL cannot be displayed. URL does not belong to current user.")
+  } else {
+    delete urlDatabase[req.params.shortcode]
+    res.redirect("/urls/")
+  }
+  console.log(urlDatabase);
 });
 
 app.listen(PORT, () => {
