@@ -45,7 +45,15 @@ app.get("/u/:shortURL",(req,res) => {
 
 app.get("/urls", (req,res) => {
   let templateVars = {urls: urlDatabase, user: getUserObject(req.cookies["user_id"])};
-  res.render("urls_index", templateVars);
+  if (templateVars.user === undefined) {
+    res.send("Please login or register first.")
+  } else {
+    let userURLs = urlsForUser(templateVars.user.id);
+    templateVars['userURLs'] = userURLs;
+    console.log(userURLs);
+    res.render("urls_index", templateVars);
+  }
+  
 });
 
 app.get("/urls/new", (req,res) => {
@@ -59,7 +67,12 @@ app.get("/urls/new", (req,res) => {
 
 app.get("/urls/:shortURL", (req, res) => {
   let templateVars = {shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL].longURL, user: getUserObject(req.cookies["user_id"])};
-  res.render("urls_show", templateVars);
+  if (templateVars.user === undefined) {
+    res.send("Please login or register first.")
+  } else {
+    res.render("urls_show", templateVars);
+
+  }
 });
 
 app.get("/urls.json", (req,res) => {
@@ -130,6 +143,10 @@ app.post("/urls", (req,res) => {
 app.post("/urls/:shortURL", (req,res) => {
   const { shortURL } = req.params;
   const { longURL } = req.body;
+  let templateVars = {user: getUserObject(req.cookies["user_id"])}
+  if (templateVars.user === undefined) {
+
+  }
   urlDatabase[shortURL] = longURL;
   res.redirect("/urls/")
 });
@@ -184,4 +201,14 @@ function getUserNamebyEmail(email) {
     }
   }
   return undefined;
+}
+
+function urlsForUser(id) {
+  const userURLs = {};
+  for (let shorturl in urlDatabase) {
+    if(urlDatabase[shorturl].userID === id) {
+      userURLs[shorturl] = urlDatabase[shorturl];
+    }
+  }
+  return userURLs;
 }

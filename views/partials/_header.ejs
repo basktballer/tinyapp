@@ -11,16 +11,6 @@
     </head>
     <h1 class="h1 mb-3 font-weight-bold">TinyApp</h1>
     <% if(user === undefined) {%>
-    <!-- <form action="/login" method="GET" > -->
-      <!-- <span>        
-        <input class="form-control" type="text" name="username" style="width: 300px; margin: 1em">
-      </span> -->
-      <!-- <span>
-        <button type="submit" class="btn btn-primary" >Login</button>
-      </span> -->
-      <!-- <span style="width: 150px; margin: 1em">
-          <a href="/login">Login</a>
-      </span> -->
       <ul class="nav">
           <li class="nav-item">
             <a class="nav-link" href="../register">Register</a>
@@ -32,7 +22,6 @@
             <a class="nav-link" href="../login">Login</a>
           </li>
       </ul>
-    <!-- </form> -->
       <% } else { %>
         <form action="/logout" method="POST" >
           <ul class="nav">
@@ -54,15 +43,6 @@
           </div>
         </form>
       <% } %>
-    <!-- <span style="width: 150px; margin: 1em">
-        <a href="../urls/new">Create a new URL</a>
-    </span>
-    <span style="width: 150px; margin: 1em">
-        <a href="../urls/">Back to List of URLs</a>
-    </span>
-    <span style="width: 150px; margin: 1em">
-        <a href="../register">Register new User</a>
-    </span> -->
     <br>
     <br>
   </html>
