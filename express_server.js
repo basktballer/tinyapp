@@ -1,36 +1,35 @@
 const express = require("express");
-const cookieParser = require ("cookie-parser")
-const bodyParser = require("body-parser")
-const bcrypt = require("bcrypt")
+const cookieSession = require("cookie-session");
+const bodyParser = require("body-parser");
+const bcrypt = require("bcrypt");
 const app = express();
 const PORT = 8080;
 
 app.set("view engine", "ejs");
 
 app.use(bodyParser.urlencoded({extended: true}));
-app.use(cookieParser());
+app.use(cookieSession({
+  name: 'session',
+  keys: ['hello', 'goodbye'],
+
+  // Cookie Options
+  maxAge: 24 * 60 * 60 * 1000 // 24 hours
+}));
 
 var urlDatabase = {
   "b2xVn2": { longURL: "http://www.lighthouselabs.ca", userID: "userRandomID"},
   "9sm5xK": {longURL: "http://www.google.com", userID: "user2RandomID"}
 };
 
-const users = {
-  "userRandomID" : {
-    id: "userRandomID",
-    email: "user@example.com",
-    password: "asdf"
-    //    password: "purple-monkey-dinosaur"
-},
-  "user2RandomID" : {
-    id: "user2RandomID",
-    email: "user2@example.com",
-    password: "dishwasher-funk"
-  }
-}
+const users = {};
 
 app.get("/", (req,res) => {
-  res.send("Hello!");
+  let templateVars = {urls: urlDatabase, user: getUserObject(req.session["user_id"])};
+  if (templateVars.user === undefined) {
+    res.redirect("/login");
+  } else {
+    res.redirect("/urls");
+  }
 });
 
 app.get("/hello", (req,res) => {
@@ -38,18 +37,24 @@ app.get("/hello", (req,res) => {
 });
 
 app.get("/u/:shortURL",(req,res) => {
-  if (urlDatabase[req.params.shortURL] === undefined) {
-    res.redirect("/urls/new")
+  const { shortURL } = req.params;
+  let templateVars = {user: getUserObject(req.session["user_id"])};
+  if (urlDatabase.shortURL === undefined) {
+    templateVars['error'] = "Tiny URL does not exist.";
+    res.status(400);
+    res.render("urls_error", templateVars);
   } else {
-    const longURL = urlDatabase[req.params.shortURL].longURL;
-    res.redirect(longURL)  
+    const longURL = urlDatabase.shortURL.longURL;
+    res.redirect(longURL);
   }
 });
 
 app.get("/urls", (req,res) => {
-  let templateVars = {urls: urlDatabase, user: getUserObject(req.cookies["user_id"])};
+  let templateVars = {urls: urlDatabase, user: getUserObject(req.session["user_id"])};
   if (templateVars.user === undefined) {
-    res.send("Please login or register first.")
+    templateVars['error'] = "Please login or register first";
+    res.status(401);
+    res.render("urls_error", templateVars)
   } else {
     let userURLs = urlsForUser(templateVars.user.id);
     templateVars['userURLs'] = userURLs;
@@ -59,7 +64,7 @@ app.get("/urls", (req,res) => {
 });
 
 app.get("/urls/new", (req,res) => {
-  let templateVars = {user: getUserObject(req.cookies["user_id"])}
+  let templateVars = {user: getUserObject(req.session["user_id"])}
   if (templateVars.user === undefined) {
     res.redirect("/login");
   } else {
@@ -68,15 +73,23 @@ app.get("/urls/new", (req,res) => {
 })
 
 app.get("/urls/:shortURL", (req, res) => {
-  let templateVars = {shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL].longURL, user: getUserObject(req.cookies["user_id"])};
-  if (templateVars.user === undefined) {
-    res.send("Please login or register first.")
-  } else if(urlDatabase[templateVars.shortURL].userID !== templateVars.user.id) {
-    res.send(`URL cannot be displayed. URL does not belong to current user: ${templateVars.user.id}.`)
-  }
-  else {
+  const { shortURL } = req.params;
+  let templateVars = {shortURL: shortURL, user: getUserObject(req.session["user_id"])};
+  if(urlDatabase[shortURL] === undefined) {
+    templateVars['error'] = "Tiny URL does not exist.";
+    res.status(403);
+    res.render("urls_error", templateVars);
+  } else if (templateVars.user === undefined) {
+    templateVars['error'] = "Please login or register first";
+    res.status(401);
+    res.render("urls_error", templateVars);
+  } else if(urlDatabase[shortURL].userID !== templateVars.user.id) {
+    templateVars['error'] = "URL cannot be displayed. URL does not belong to user";
+    res.status(401);
+    res.render("urls_error", templateVars);
+  } else {
+    templateVars[longURL] = urlDatabase[shortURL].longURL;
     res.render("urls_show", templateVars);
-
   }
 });
 
@@ -85,27 +98,43 @@ app.get("/urls.json", (req,res) => {
 });
 
 app.get("/register", (req,res) => {
-  let templateVars = {user: getUserObject(req.cookies["user_id"])}
-  res.render("urls_register", templateVars);
+  let templateVars = {user: getUserObject(req.session["user_id"])}
+  if (templateVars.user === undefined) {
+    res.render("urls_register", templateVars);
+  } else {
+    res.redirect("/urls/");
+  }
 });
 
 app.get("/login", (req,res) => {
-  let templateVars = {user: getUserObject(req.cookies["user_id"])}
-  res.render("urls_login",templateVars);
+  let templateVars = {user: getUserObject(req.session["user_id"])};
+  if (templateVars.user === undefined) {
+    res.render("urls_login",templateVars);
+  } else {
+    res.redirect("/urls/");
+  }
 });
 
 app.post("/login", (req,res) => {
   const { email, password} = req.body
-  const username = getUserNamebyEmail(email);
-  if (emailChecker(email)!== true) {
+  let templateVars = {user: getUserObject(req.session["user_id"])};
+  if (email === '' || password === '') {
+    res.status(400);
+    templateVars['error'] = "Email or password blank";
+    res.render("urls_error", templateVars);
+  }
+  else if (emailChecker(email)!== true) {
     res.status(403);
-    res.send("Email not found.");
+    templateVars['error'] = "Email not found";
+    res.render("urls_error", templateVars);
   } else {
+    let username = getUserNamebyEmail(email);
     if (pwChecker(username, password)===false) {
       res.status(403);
-      res.send("Password incorrect.");
+      templateVars['error'] = "Incorrect password";
+      res.render("urls_error", templateVars);
     } else {
-      res.cookie('user_id',username);
+      req.session.user_id = username;
       res.redirect("/urls/");
     }
   }
@@ -113,21 +142,22 @@ app.post("/login", (req,res) => {
 });
 
 app.post("/logout", (req,res) => {
-  res.clearCookie('user_id');
-  res.redirect("/login/");
+  req.session = null;
+  res.redirect("/");
 });
 
 app.post("/register", (req,res) => {
-
   const { email, password} = req.body;
+  let templateVars = {user: getUserObject(req.session["user_id"])};
   if (email === '' || password === '') {
     res.status(400);
-    res.send("Email or username blank.")
+    templateVars['error'] = "Email or password blank";
+    res.render("urls_error", templateVars);
   } else if (emailChecker(email)=== true) {
-    res.status(400);
-    res.send("Email already exists.")
+    res.status(403);
+    templateVars['error'] = "Email already exists";
+    res.render("urls_error", templateVars);
   } else {
-
     const id = generateRandomString(6);
     const hashedPassword = bcrypt.hashSync(password,10);
     users[id] = {
@@ -135,40 +165,55 @@ app.post("/register", (req,res) => {
       email, 
       hashedPassword
     };
-    res.cookie('user_id',id);
+    req.session.user_id = id;
     res.redirect("/urls");
   }
 });
 
 app.post("/urls", (req,res) => {
   var shortURL = generateRandomString(6);
-  urlDatabase[shortURL] = {longURL: req.body.longURL, userID: getUserObject(req.cookies["user_id"]).id};
-  res.redirect("/urls/");
+  let templateVars = {user: getUserObject(req.session["user_id"])}
+  if (templateVars.user === undefined) {
+    templateVars['error'] = "Please login first";
+    res.status(401);
+    res.render("urls_error", templateVars);
+  } else {
+    urlDatabase[shortURL] = {longURL: req.body.longURL, userID: templateVars.user.id};
+    res.redirect("/urls/");
+  }
 });
 
 app.post("/urls/:shortURL", (req,res) => {
   const { shortURL } = req.params;
   const { longURL } = req.body;
-  let templateVars = {user: getUserObject(req.cookies["user_id"])}
+  let templateVars = {user: getUserObject(req.session["user_id"])}
   if (templateVars.user === undefined) {
-    res.send("Please login first.")
+    templateVars['error'] = "Please login first";
+    res.status(401);
+    res.render("urls_error", templateVars);
   } else if (urlDatabase[shortURL].userID !== templateVars.user.id) {
-    res.send("URL cannot be displayed. URL does not belong to current user.")
+    templateVars['error'] = "URL cannot be displayed. URL does not belong to user";
+    res.status(401);
+    res.render("urls_error", templateVars);
   } else {
-    urlDatabase[shortURL] = longURL;
+    urlDatabase[shortURL] = {longURL: longURL, userID: getUserObject(req.session["user_id"]).id};
     res.redirect("/urls/")
   }
 });
 
-app.post("/urls/:shortcode/delete", (req,res) => {
+app.post("/urls/:shortURL/delete", (req,res) => {
   const { shortURL } = req.params;
-  let templateVars = {user: getUserObject(req.cookies["user_id"])}
+  let templateVars = {user: getUserObject(req.session["user_id"])}
   if (templateVars.user === undefined) {
-    res.send("Please login first.")
+    templateVars['error'] = "Please login first";
+    res.status(401);
+    res.render("urls_error", templateVars);
   } else if (urlDatabase[shortURL].userID !== templateVars.user.id) {
-    res.send("URL cannot be displayed. URL does not belong to current user.")
+    templateVars['error'] = "URL cannot be displayed. URL does not belong to user";
+    res.status(401);
+    res.render("urls_error", templateVars);
   } else {
-    delete urlDatabase[req.params.shortcode]
+    delete urlDatabase[shortURL]
     res.redirect("/urls/")
   }
 });
