@@ -39,12 +39,12 @@ app.get("/hello", (req,res) => {
 app.get("/u/:shortURL",(req,res) => {
   const { shortURL } = req.params;
   let templateVars = {user: getUserObject(req.session["user_id"])};
-  if (urlDatabase.shortURL === undefined) {
+  if (urlDatabase[shortURL] === undefined) {
     templateVars['error'] = "Tiny URL does not exist.";
     res.status(400);
     res.render("urls_error", templateVars);
   } else {
-    const longURL = urlDatabase.shortURL.longURL;
+    const longURL = urlDatabase[shortURL].longURL;
     res.redirect(longURL);
   }
 });
@@ -88,7 +88,7 @@ app.get("/urls/:shortURL", (req, res) => {
     res.status(401);
     res.render("urls_error", templateVars);
   } else {
-    templateVars[longURL] = urlDatabase[shortURL].longURL;
+    templateVars['longURL'] = urlDatabase[shortURL].longURL;
     res.render("urls_show", templateVars);
   }
 });
