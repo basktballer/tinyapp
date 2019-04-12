@@ -9,17 +9,52 @@
       <title>Edit <%=shortURL %> - TinyApp</title>
     </head>
     <body style="font-size:20px; padding:50px;">
-      <header>
-        <% include ./partials/_header.ejs %>
-      </header>
-      <h3>ShortURL: <b><%= shortURL%></b></h3>
-      <form method="POST" action="/urls/<%= shortURL%>/"  id= <%= shortURL %>>
-        <span>
-            <input type="text" name="longURL" value=<%= longURL %> style="width: 300px; margin: 1em">
-        </span>
-        <span>
-          <button type="submit" class="btn btn-primary">Update</button>
-        </span>
-      </form> 
+      
+      <% include ./partials/_header.ejs %>
+
+      <h1 class="h1 mb-3 font-weight-bold">Edit Short URL: <b><%= shortURL%></b></h1>
+      <form method="POST" style="width: 800" class="form-inline" action="/urls/<%= shortURL%>?_method=PUT"  id= <%= shortURL %>>
+        <div class="form-group" >
+            <label type="text" name="pageViews" style="width: 200px; font-size: 20px">URL to be made Tiny: </label>
+            <input type="text" name="longURL" class= "form-control" value=<%= longURL %> style="width: 400px; font-size: 20px; margin: 1em">
+            <button type="submit" class="btn btn-primary btn-lg" style="width: 150px">Update</button>
+        </div>        
+      </form>
+      <h3 class="h3 mb-3 font-weight-bold" style="padding: 20px 0 0 0">Page Statistics</h3>
+      <ul class="list-group" style="width: 800px">
+          <li class="list-group-item d-flex justify-content-between align-items-center">
+            Page Views:
+            <span class="badge badge-primary badge-pill"><%= pageViews %></span>
+          </li>
+          <li class="list-group-item d-flex justify-content-between align-items-center">
+            Unique Visitors:
+            <span class="badge badge-primary badge-pill"><%= uniqueVisitors %> </span>
+          </li>
+        </ul> 
+        <span style="height: 20px"></span>
+        <h3 class="h3 mb-3 font-weight-bold" style="padding: 20px 0 0 0">Visit History</h3>
+        <div class="table-responsive" style="width: 800px">
+          <table class="table table-striped table-sm">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Time Stamp</th>
+                <th>Generated Visitor ID</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% let visitIndex = 0; %>
+              <% for(let visit of visits) { %>
+              <% visitIndex += 1; %>
+              <% const time = visit.timestamp; %>
+              <tr>
+                <td><%= visitIndex %></td>
+                <td><%= time %></td>
+                <td><%= visit.uniqueID %></td>
+              </tr>
+              <% }; %>
+            </tbody>
+          </table>
+        </div>
     </body>
   </html>

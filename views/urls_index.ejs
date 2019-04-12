@@ -9,24 +9,23 @@
       <title>Your URLs - TinyApp</title>
     </head>
     <body style="font-size:20px; padding:50px;">
-      <header>
-          <% include ./partials/_header.ejs %>
-      </header>
-        <h3>My URLs</h3>
-          <% for(let url in userURLs) { %>
-              <form method="POST" action="/urls/<%= url%>/delete"  id= <%= url %>>
-                <span>                  
-                  <label style="font-weight: bold; width: 50px; margin: 1em"><%=url %>:</label>
-                </span>
-                <span>
-                  <label style="width: 250px; margin: 1em"><%= userURLs[url].longURL %></label>
-                </span>
-                <span>
-                  <label style="width: 25px; margin: 1em"><a href="/urls/<%= url%>">Edit</a></label>
-                </span>
-                <button type="submit" class="btn btn-primary" style="width: 120px; margin: 1em"><b>Delete</b> 🗑️</button>
-              </form> 
-          <% }; %>
-     
+        
+      <% include ./partials/_header.ejs %>
+
+      <h1 class="h1 mb-3 font-weight-bold">My URLs</h1>
+        <% for(let url in userURLs) { %>
+            <form method="POST" action="/urls/<%= url%>/delete?_method=DELETE"  id= <%= url %>>
+              <span>                  
+                <label style="font-weight: bold; width: 50px; margin: 1em"><%=url %>:</label>
+              </span>
+              <span>
+                <label style="width: 250px; margin: 1em"><%= userURLs[url].longURL %></label>
+              </span>
+              <span>
+                <label style="width: 25px; margin: 1em"><a href="/urls/<%= url%>">Edit</a></label>
+              </span>
+              <button type="submit" class="btn btn-primary btn-lg" style="width: 150px; margin: 1em"><b>Delete</b> 🗑️</button>
+            </form> 
+        <% }; %>     
     </body>
   </html>
